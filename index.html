@@ -1,153 +1,134 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2822
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\margl1440\margr1440\vieww11520\viewh8400\viewkind0
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Genesis — Emotion Tagger (Demo)</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #fafafa;
+      margin: 2rem;
+      color: #222;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+    #verses {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .verse-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 1rem;
+    }
+    .verse-ref {
+      font-weight: bold;
+      margin-bottom: .3rem;
+    }
+    .controls {
+      margin-top: .5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      align-items: center;
+    }
+    input[type="number"], input[type="text"] {
+      padding: .3rem .4rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: .9rem;
+    }
+    label {
+      font-size: .9rem;
+    }
+  </style>
+</head>
+<body>
 
-\f0\fs24 \cf0 <!DOCTYPE html>\
-<html lang="en">\
-<head>\
-  <meta charset="UTF-8">\
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">\
-  <title>Genesis \'97 Emotion Tagger (Demo)</title>\
-  <style>\
-    body \{\
-      font-family: system-ui, sans-serif;\
-      background: #fafafa;\
-      margin: 2rem;\
-      color: #222;\
-    \}\
-    h1 \{\
-      font-size: 1.8rem;\
-      margin-bottom: 1rem;\
-    \}\
-    #verses \{\
-      display: flex;\
-      flex-direction: column;\
-      gap: 1rem;\
-    \}\
-    .verse-card \{\
-      background: white;\
-      border-radius: 12px;\
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);\
-      padding: 1rem;\
-    \}\
-    .verse-ref \{\
-      font-weight: bold;\
-      margin-bottom: .3rem;\
-    \}\
-    .controls \{\
-      margin-top: .5rem;\
-      display: flex;\
-      flex-wrap: wrap;\
-      gap: .5rem;\
-      align-items: center;\
-    \}\
-    input[type="number"], input[type="text"] \{\
-      padding: .3rem .4rem;\
-      border-radius: 6px;\
-      border: 1px solid #ccc;\
-      font-size: .9rem;\
-    \}\
-    label \{\
-      font-size: .9rem;\
-    \}\
-  </style>\
-</head>\
-<body>\
-\
-  <h1>Genesis \'97 Emotion Tagger (Demo)</h1>\
-  <div id="verses">Loading...</div>\
-\
-  <script>\
-  /* ---------------------------\
-     Bible Emotion Dissector (Option C)\
-     Loads Genesis live from GitHub with local fallback + localStorage persistence\
-  ---------------------------- */\
-\
-  const remoteURL = "https://raw.githubusercontent.com/perseus596/_-APP-refiner-KJV_json/main/Genesis.json";\
-  let bibleData = [];\
-\
-  // Load Genesis data (remote first, fallback local)\
-  async function loadBibleData() \{\
-    try \{\
-      const response = await fetch(remoteURL);\
-      if (!response.ok) throw new Error("Remote fetch failed");\
-      bibleData = await response.json();\
-      console.log("\uc0\u9989  Loaded Genesis.json from GitHub");\
-    \} catch (error) \{\
-      console.warn("\uc0\u9888 \u65039  Remote load failed, using local fallback", error);\
-      try \{\
-        const localResponse = await fetch("Genesis.json");\
-        bibleData = await localResponse.json();\
-        console.log("\uc0\u9989  Loaded local fallback Genesis.json");\
-      \} catch (e) \{\
-        console.error("\uc0\u10060  Could not load Genesis.json at all.", e);\
-        document.getElementById("verses").innerHTML = "<p>Could not load Genesis data.</p>";\
-        return;\
-      \}\
-    \}\
-    renderVerses();\
-  \}\
-\
-  // Render verse list\
-  function renderVerses() \{\
-    const container = document.getElementById("verses");\
-    container.innerHTML = "";\
-\
-    bibleData.forEach(v => \{\
-      const verseCard = document.createElement("div");\
-      verseCard.className = "verse-card";\
-\
-      verseCard.innerHTML = `\
-        <div class="verse-ref"><strong>Genesis $\{v.chapter\}:$\{v.verse\}</strong></div>\
-        <div class="verse-text">$\{v.text\}</div>\
-        <div class="controls">\
-          <label>Emotion:\
-            <input type="number" min="1" max="10" value="$\{v.emotion\}" onchange="updateEmotion('$\{v.id\}', this.value)">\
-          </label>\
-          <input type="text" placeholder="tags (comma separated)" value="$\{v.tags.join(', ')\}"\
-                 onchange="updateTags('$\{v.id\}', this.value)">\
-        </div>\
-      `;\
-\
-      container.appendChild(verseCard);\
-    \});\
-  \}\
-\
-  // Update emotion score\
-  function updateEmotion(id, val) \{\
-    const verse = bibleData.find(v => v.id === id);\
-    if (verse) verse.emotion = parseInt(val) || 0;\
-    saveLocal();\
-  \}\
-\
-  // Update tags\
-  function updateTags(id, val) \{\
-    const verse = bibleData.find(v => v.id === id);\
-    if (verse) verse.tags = val.split(",").map(t => t.trim()).filter(Boolean);\
-    saveLocal();\
-  \}\
-\
-  // Save local copy\
-  function saveLocal() \{\
-    localStorage.setItem("GenesisData", JSON.stringify(bibleData));\
-  \}\
-\
-  // Load local if available, else fetch\
-  window.onload = async () => \{\
-    const saved = localStorage.getItem("GenesisData");\
-    if (saved) \{\
-      bibleData = JSON.parse(saved);\
-      console.log("\uc0\u55357 \u56510  Loaded from localStorage");\
-      renderVerses();\
-    \} else \{\
-      await loadBibleData();\
-    \}\
-  \};\
-  </script>\
-\
-</body>\
-</html>\
-}
+  <h1>Genesis — Emotion Tagger (Demo)</h1>
+  <div id="verses">Loading...</div>
+
+  <script>
+  const remoteURL = "https://raw.githubusercontent.com/perseus596/_-APP-refiner-KJV_json/main/Genesis.json";
+  let bibleData = [];
+
+  async function loadBibleData() {
+    try {
+      const response = await fetch(remoteURL);
+      if (!response.ok) throw new Error("Remote fetch failed");
+      bibleData = await response.json();
+      console.log("✅ Loaded Genesis.json from GitHub");
+    } catch (error) {
+      console.warn("⚠️ Remote load failed, using local fallback", error);
+      try {
+        const localResponse = await fetch("Genesis.json");
+        bibleData = await localResponse.json();
+        console.log("✅ Loaded local fallback Genesis.json");
+      } catch (e) {
+        console.error("❌ Could not load Genesis.json at all.", e);
+        document.getElementById("verses").innerHTML = "<p>Could not load Genesis data.</p>";
+        return;
+      }
+    }
+    renderVerses();
+  }
+
+  function renderVerses() {
+    const container = document.getElementById("verses");
+    container.innerHTML = "";
+
+    bibleData.forEach(v => {
+      const verseCard = document.createElement("div");
+      verseCard.className = "verse-card";
+
+      verseCard.innerHTML = `
+        <div class="verse-ref"><strong>Genesis ${v.chapter}:${v.verse}</strong></div>
+        <div class="verse-text">${v.text}</div>
+        <div class="controls">
+          <label>Emotion:
+            <input type="number" min="1" max="10" value="${v.emotion}" onchange="updateEmotion('${v.id}', this.value)">
+          </label>
+          <input type="text" placeholder="tags (comma separated)" value="${v.tags.join(', ')}"
+                 onchange="updateTags('${v.id}', this.value)">
+        </div>
+      `;
+
+      container.appendChild(verseCard);
+    });
+  }
+
+  function updateEmotion(id, val) {
+    const verse = bibleData.find(v => v.id === id);
+    if (verse) verse.emotion = parseInt(val) || 0;
+    saveLocal();
+  }
+
+  function updateTags(id, val) {
+    const verse = bibleData.find(v => v.id === id);
+    if (verse) verse.tags = val.split(",").map(t => t.trim()).filter(Boolean);
+    saveLocal();
+  }
+
+  function saveLocal() {
+    localStorage.setItem("GenesisData", JSON.stringify(bibleData));
+  }
+
+  window.onload = async () => {
+    const saved = localStorage.getItem("GenesisData");
+    if (saved) {
+      bibleData = JSON.parse(saved);
+      console.log("💾 Loaded from localStorage");
+      renderVerses();
+    } else {
+      await loadBibleData();
+    }
+  };
+  </script>
+
+</body>
+</html>
